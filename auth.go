@@ -19,11 +19,25 @@ type auth struct {
 	client   IClient
 }
 
+func (a auth) CheckKey(ctx context.Context, key string) (bool, error) {
+	if key == "" {
+		key = a.apiKey
+	}
+	resp := &CommonResponse{}
+	req := url.Values{}
+	req.Set("apiKey", key)
+	err := a.client.GetJSON(ctx, checkKeyURL, req, resp)
+	if err != nil {
+		return false, err
+	}
+	return resp.IsSuccess(), resp.Error()
+}
+
 func (a auth) Login(ctx context.Context) (string, error) {
 	resp := &CommonResponse{}
 	req := url.Values{}
 	req.Add("apiKey", a.apiKey)
-	req.Add("userName", a.userName)
+	req.Add("username", a.userName)
 	req.Add("password", a.password)
 	err := a.client.GetJSON(ctx, loginURL, req, resp)
 	if err != nil {

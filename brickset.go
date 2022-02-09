@@ -18,6 +18,7 @@ import (
 type IBrickAuth interface {
 	Login(ctx context.Context) (string, error)
 	CheckUserHash(ctx context.Context, hash string) (bool, error)
+	CheckKey(ctx context.Context, key string) (bool, error)
 }
 
 type IBrickHash interface {

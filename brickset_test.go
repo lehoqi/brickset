@@ -14,14 +14,14 @@ import (
 )
 
 var (
-	apiKey   = "your own api key"
-	userName = "your own username"
-	password = "your own password"
+	apiKey   = ""
+	userName = ""
+	password = ""
 )
 
 func TestGetSetsByTheme(t *testing.T) {
 	b := New(apiKey, userName, password, WithDebug(true))
-	_, sets, err := b.GetSets(context.Background(), true, &GetSetRequest{Theme: "Pirates"})
+	_, sets, err := b.GetSets(context.Background(), &GetSetRequest{Theme: "Pirates"})
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sets)
 }
@@ -33,8 +33,15 @@ func TestGetThemes(t *testing.T) {
 }
 
 func TestGetSetsWithDownload(t *testing.T) {
-	b := New(apiKey, userName, password, WithDebug(true), WithImagePath("/Users/wuhb/Downloads/brickset/images", "wuhb"))
-	_, sets, err := b.GetSets(context.Background(), true, &GetSetRequest{Theme: "Pirates"})
+	b := New(apiKey, userName, password, WithDebug(true), WithImagePath("/images", "p"))
+	_, sets, err := b.GetSets(context.Background(), &GetSetRequest{Theme: "Pirates"})
 	assert.NoError(t, err)
 	assert.NotEmpty(t, sets)
+}
+
+func TestAuthCheckKey(t *testing.T) {
+	a := NewAuth(apiKey, userName, password, NewClient(baseURL, true))
+	ok, err := a.CheckKey(context.Background(), "")
+	assert.NoError(t, err)
+	assert.True(t, ok)
 }
