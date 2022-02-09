@@ -24,7 +24,7 @@ type IBrickHash interface {
 	GetHash(ctx context.Context) (string, error)
 }
 type IBrickSet interface {
-	GetSets(ctx context.Context, useHash bool, params *GetSetRequest) (int, []*Sets, error)
+	GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error)
 	GetThemes(ctx context.Context) (int, []*Themes, error)
 }
 
@@ -48,19 +48,17 @@ func (b brickSet) GetThemes(ctx context.Context) (int, []*Themes, error) {
 	return response.Matches, response.Themes, response.Error()
 }
 
-func (b brickSet) GetSets(ctx context.Context, useHash bool, params *GetSetRequest) (int, []*Sets, error) {
+func (b brickSet) GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error) {
 	response := &CommonResponse{}
 	request := url.Values{}
 	request.Set("params", params.JSON())
 	request.Set("apiKey", b.conf.apiKey)
-	if useHash {
-		hash, err := b.hash.GetHash(ctx)
-		if err != nil {
-			return 0, nil, err
-		}
-		request.Set("userHash", hash)
+	hash, err := b.hash.GetHash(ctx)
+	if err != nil {
+		return 0, nil, err
 	}
-	err := b.client.GetJSON(ctx, getSetsURL, request, response)
+	request.Set("userHash", hash)
+	err = b.client.GetJSON(ctx, getSetsURL, request, response)
 	if err != nil {
 		return 0, nil, err
 	}
