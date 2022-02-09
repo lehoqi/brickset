@@ -45,3 +45,10 @@ func TestAuthCheckKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, ok)
 }
+
+func TestGetReviews(t *testing.T) {
+	b := New(apiKey, userName, password, WithDebug(true))
+	_, reviews, err := b.GetReviews(context.Background(), 7308)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reviews)
+}

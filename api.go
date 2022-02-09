@@ -14,4 +14,5 @@ const (
 	checkKeyURL      = "/checkKey"
 	getSetsURL       = "/getSets"
 	getThemesURL     = "/getThemes"
+	getReviewsURL    = "/getReviews"
 )

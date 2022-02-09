@@ -16,6 +16,7 @@ type config struct {
 	apiKey      string
 	hashExpires time.Duration
 	imagePath   *imagePath
+	storage     IBrickStorage
 }
 type imagePath struct {
 	base   string

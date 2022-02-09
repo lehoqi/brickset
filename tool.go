@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 )
 
 func getPathFromURL(u string) (string, error) {
@@ -23,6 +24,7 @@ func getPathFromURL(u string) (string, error) {
 }
 
 func downloadFile(source string, target string) error {
+	_ = os.MkdirAll(filepath.Dir(target), os.ModePerm)
 	resp, err := http.Get(source)
 	if err != nil {
 		return err

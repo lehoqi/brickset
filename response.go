@@ -16,6 +16,7 @@ type CommonResponse struct {
 	Matches int       `json:"matches"`
 	Sets    []*Sets   `json:"sets"`
 	Hash    string    `json:"hash"`
+	Reviews []*Review `json:"reviews"`
 }
 
 func (c CommonResponse) IsSuccess() bool {

@@ -18,10 +18,22 @@ import (
 type IClient interface {
 	GetJSON(ctx context.Context, api string, params url.Values, response interface{}) error
 	PostJSON(ctx context.Context, api string, request interface{}, response interface{}) error
+	PostForm(ctx context.Context, api string, params url.Values, response interface{}) error
 }
 
 type client struct {
 	r *resty.Client
+}
+
+func (c client) PostForm(ctx context.Context, api string, params url.Values, response interface{}) error {
+	resp, err := c.r.R().SetContext(ctx).SetFormDataFromValues(params).Post(api)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() != http.StatusOK {
+		return errors.New(http.StatusText(resp.StatusCode()))
+	}
+	return c.r.JSONUnmarshal(resp.Body(), response)
 }
 
 func (c client) GetJSON(ctx context.Context, api string, params url.Values, response interface{}) error {

@@ -9,21 +9,22 @@ package brickset
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 )
 
 type sHash struct {
-	auth        IBrickAuth
-	hash        string
-	lastUpdated time.Time
-	expires     time.Duration
-	lock        *sync.RWMutex
+	auth    IBrickAuth
+	storage IBrickStorage
+	expires time.Duration
+	lock    *sync.RWMutex
 }
 
-func (s *sHash) GetHash(ctx context.Context) (string, error) {
-	if s.hash != "" && s.lastUpdated.Add(s.expires).After(time.Now()) {
-		return s.hash, nil
+func (s *sHash) GetHash(ctx context.Context, username string) (string, error) {
+	v, err := s.storage.Get(ctx, fmt.Sprintf("%s-hash", username))
+	if err == nil {
+		return v.(string), nil
 	}
 	s.lock.Lock()
 	defer s.lock.Unlock()
@@ -31,14 +32,19 @@ func (s *sHash) GetHash(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	s.hash = h
-	s.lastUpdated = time.Now()
-	return s.hash, nil
+	if err = s.storage.Set(ctx, fmt.Sprintf("%s-hash", username), h, s.expires); err != nil {
+		return "", err
+	}
+	return h, nil
 }
 
-func NewHash(auth IBrickAuth, expires time.Duration) IBrickHash {
+func NewHash(auth IBrickAuth, store IBrickStorage, expires time.Duration) IBrickHash {
 	if expires == 0 {
 		expires = time.Hour * 24
 	}
-	return &sHash{auth: auth, expires: expires, lock: new(sync.RWMutex)}
+	return &sHash{
+		auth:    auth,
+		storage: store,
+		expires: expires,
+		lock:    new(sync.RWMutex)}
 }

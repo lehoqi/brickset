@@ -9,9 +9,11 @@ package brickset
 
 import (
 	"context"
+	"github.com/wuhongbing/brickset/storage"
 	"log"
 	"net/url"
 	"path"
+	"strconv"
 	"time"
 )
 
@@ -22,19 +24,26 @@ type IBrickAuth interface {
 }
 
 type IBrickHash interface {
-	GetHash(ctx context.Context) (string, error)
+	GetHash(ctx context.Context, username string) (string, error)
 }
 type IBrickSet interface {
 	GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error)
 	GetThemes(ctx context.Context) (int, []*Themes, error)
+	GetReviews(ctx context.Context, setID int) (int, []*Review, error)
 }
 
-var Logger log.Logger
+type IBrickStorage interface {
+	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error
+	Get(ctx context.Context, key string) (interface{}, error)
+}
+
+var Logger = log.Default()
 
 type Option func(conf *config)
 type brickSet struct {
 	conf   *config
 	hash   IBrickHash
+	auth   IBrickAuth
 	client IClient
 }
 
@@ -49,12 +58,24 @@ func (b brickSet) GetThemes(ctx context.Context) (int, []*Themes, error) {
 	return response.Matches, response.Themes, response.Error()
 }
 
+func (b brickSet) GetReviews(ctx context.Context, setID int) (int, []*Review, error) {
+	response := &CommonResponse{}
+	request := url.Values{}
+	request.Set("apiKey", b.conf.apiKey)
+	request.Set("setID", strconv.Itoa(setID))
+	err := b.client.GetJSON(ctx, getReviewsURL, request, response)
+	if err != nil {
+		return 0, nil, err
+	}
+	return response.Matches, response.Reviews, response.Error()
+}
+
 func (b brickSet) GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error) {
 	response := &CommonResponse{}
 	request := url.Values{}
 	request.Set("params", params.JSON())
 	request.Set("apiKey", b.conf.apiKey)
-	hash, err := b.hash.GetHash(ctx)
+	hash, err := b.hash.GetHash(ctx, b.conf.userName)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -69,6 +90,7 @@ func (b brickSet) GetSets(ctx context.Context, params *GetSetRequest) (int, []*S
 			if err != nil {
 				Logger.Printf("download image error:%v", err)
 			}
+			err = nil
 		}
 	}
 	return response.Matches, response.Sets, response.Error()
@@ -84,10 +106,16 @@ func New(apiKey, username, password string, opts ...Option) IBrickSet {
 	for _, opt := range opts {
 		opt(conf)
 	}
+	if conf.storage == nil {
+		conf.storage = storage.NewMemory()
+	}
 	c := NewClient(baseURL, conf.debug)
+	a := NewAuth(conf.apiKey, conf.userName, conf.password, c)
+	h := NewHash(a, conf.storage, conf.hashExpires)
 	return &brickSet{
 		conf:   conf,
-		hash:   NewHash(NewAuth(conf.apiKey, conf.userName, conf.password, c), conf.hashExpires),
+		hash:   h,
+		auth:   a,
 		client: c,
 	}
 }
@@ -121,5 +149,11 @@ func WithImagePath(basePath string, prefix string) Option {
 			base:   basePath,
 			prefix: prefix,
 		}
+	}
+}
+
+func WithStorage(s IBrickStorage) Option {
+	return func(conf *config) {
+		conf.storage = s
 	}
 }

@@ -13,20 +13,26 @@ import (
 	"log"
 )
 
+const (
+	apiKey   = "your api key"
+	username = ""
+	password = ""
+)
+
 func main() {
 	ctx := context.Background()
-	svc := brickset.New("api-key", "username", "password", brickset.WithDebug(true))
+	svc := brickset.New(apiKey, username, password, brickset.WithImagePath("/tmp/brickset/", "/brickset/"))
 	_, themes, err := svc.GetThemes(ctx)
 	if err != nil {
 		panic(err)
 	}
 	for _, theme := range themes {
-		_, sets, err := svc.GetSets(ctx, &brickset.GetSetRequest{Theme: theme.Theme, PageSize: 500})
+		_, sets, err := svc.GetSets(ctx, &brickset.GetSetRequest{Theme: theme.Theme, PageSize: 1})
 		if err != nil {
 			panic(err)
 		}
 		for _, set := range sets {
-			log.Println(set.Name)
+			log.Printf("%+v", set)
 		}
 	}
 }

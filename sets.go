@@ -90,24 +90,28 @@ type Image struct {
 }
 
 func (i *Image) Download(c *imagePath) error {
-	tpPath, err := getPathFromURL(i.ThumbnailURL)
-	if err != nil {
-		return err
+	if i.ThumbnailURL != "" {
+		tpPath, err := getPathFromURL(i.ThumbnailURL)
+		if err != nil {
+			return err
+		}
+		err = downloadFile(i.ThumbnailURL, path.Join(c.base, tpPath))
+		if err != nil {
+			return err
+		}
+		i.ThumbnailURL = path.Join(c.prefix, tpPath)
 	}
-	err = downloadFile(i.ThumbnailURL, path.Join(c.base, tpPath))
-	if err != nil {
-		return err
+	if i.ImageURL != "" {
+		ipPath, err := getPathFromURL(i.ImageURL)
+		if err != nil {
+			return err
+		}
+		err = downloadFile(i.ImageURL, path.Join(c.base, ipPath))
+		if err != nil {
+			return err
+		}
+		i.ImageURL = path.Join(c.prefix, ipPath)
 	}
-	i.ThumbnailURL = c.prefix + tpPath
-	ipath, err := getPathFromURL(i.ImageURL)
-	if err != nil {
-		return err
-	}
-	err = downloadFile(i.ImageURL, path.Join(c.base, ipath))
-	if err != nil {
-		return err
-	}
-	i.ImageURL = c.prefix + ipath
 	return nil
 }
 
