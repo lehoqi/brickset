@@ -1,8 +1,28 @@
+## Abstract
+brickset is a Go client library for accessing the brickset.com [API v3](https://brickset.com/article/52664/api-version-3-documentation).
+
+If using this API, you may need to complete the following:
+- Register for the brickset.com,click [here](https://brickset.com/login)
+- All methods require a valid API key to be passed, which can be obtained [here](https://brickset.com/tools/webservices/requestkey).
+
+## Interfaces
+```go
+type IBrickSet interface {
+	GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error)
+	GetThemes(ctx context.Context) (int, []*Themes, error)
+	GetReviews(ctx context.Context, setID int) (int, []*Review, error)
+	GetSubthemes(ctx context.Context, theme string) (int, []*Subthemes, error)
+	GetInstructions(ctx context.Context, setID int) (int, []*Instruction, error)
+	GetInstructions2(ctx context.Context, setNumber string) (int, []*Instruction, error)
+	GetAdditionalImages(ctx context.Context, setID int) (int, []*Image, error)
+	GetYears(ctx context.Context, theme string) (int, []*Years, error)
+}
+```
 ## Installation
 
 ```bash
 # Go Modules
-require github.com/wuhongbing/brickset/v1
+require github.com/wuhongbing/brickset
 ```
 
 ## Usage
@@ -26,7 +46,7 @@ func main() {
 		panic(err)
 	}
 	for _, theme := range themes {
-		_, sets, err := svc.GetSets(ctx, &brickset.GetSetRequest{Theme: theme.Theme, PageSize: 500})
+		_, sets, err := svc.GetSets(ctx, &brickset.GetSetRequest{Theme: theme.Theme, PageSize: 2})
 		if err != nil {
 			panic(err)
 		}
@@ -35,4 +55,9 @@ func main() {
 		}
 	}
 }
+```
+## Tests
+
+```shell
+go test -v
 ```

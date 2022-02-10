@@ -30,6 +30,11 @@ type IBrickSet interface {
 	GetSets(ctx context.Context, params *GetSetRequest) (int, []*Sets, error)
 	GetThemes(ctx context.Context) (int, []*Themes, error)
 	GetReviews(ctx context.Context, setID int) (int, []*Review, error)
+	GetSubthemes(ctx context.Context, theme string) (int, []*Subthemes, error)
+	GetInstructions(ctx context.Context, setID int) (int, []*Instruction, error)
+	GetInstructions2(ctx context.Context, setNumber string) (int, []*Instruction, error)
+	GetAdditionalImages(ctx context.Context, setID int) (int, []*Image, error)
+	GetYears(ctx context.Context, theme string) (int, []*Years, error)
 }
 
 type IBrickStorage interface {
@@ -45,6 +50,73 @@ type brickSet struct {
 	hash   IBrickHash
 	auth   IBrickAuth
 	client IClient
+}
+
+func (b brickSet) GetYears(ctx context.Context, theme string) (int, []*Years, error) {
+	response := &CommonResponse{}
+	params := url.Values{}
+	params.Set("apiKey", b.conf.apiKey)
+	params.Set("theme", theme)
+	err := b.client.GetJSON(ctx, getYearsURL, params, response)
+	if err != nil {
+		return 0, nil, err
+	}
+	return response.Matches, response.Years, response.Error()
+}
+
+func (b brickSet) GetAdditionalImages(ctx context.Context, setID int) (int, []*Image, error) {
+	response := &CommonResponse{}
+	params := url.Values{}
+	params.Set("apiKey", b.conf.apiKey)
+	params.Set("setID", strconv.Itoa(setID))
+	err := b.client.GetJSON(ctx, getAdditionalImagesURL, params, response)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if b.conf.imagePath != nil && response.AdditionalImages != nil {
+		for _, image := range response.AdditionalImages {
+			err := image.Download(b.conf.imagePath)
+			if err != nil {
+				Logger.Printf("download image error:%v", err)
+			}
+		}
+	}
+	return response.Matches, response.AdditionalImages, response.Error()
+}
+func (b brickSet) GetInstructions(ctx context.Context, setID int) (int, []*Instruction, error) {
+	response := &CommonResponse{}
+	params := url.Values{}
+	params.Set("apiKey", b.conf.apiKey)
+	params.Set("setID", strconv.Itoa(setID))
+	err := b.client.GetJSON(ctx, getInstructionsURL, params, response)
+	if err != nil {
+		return 0, nil, err
+	}
+	return response.Matches, response.Instructions, response.Error()
+}
+func (b brickSet) GetInstructions2(ctx context.Context, setNumber string) (int, []*Instruction, error) {
+	response := &CommonResponse{}
+	params := url.Values{}
+	params.Set("apiKey", b.conf.apiKey)
+	params.Set("setNumber", setNumber)
+	err := b.client.GetJSON(ctx, getInstructions2URL, params, response)
+	if err != nil {
+		return 0, nil, err
+	}
+	return response.Matches, response.Instructions, response.Error()
+}
+
+func (b brickSet) GetSubthemes(ctx context.Context, theme string) (int, []*Subthemes, error) {
+	response := &CommonResponse{}
+	params := url.Values{}
+	params.Add("apiKey", b.conf.apiKey)
+	params.Set("theme", theme)
+	err := b.client.GetJSON(ctx, getSubthemesURL, params, response)
+	if err != nil {
+		return 0, nil, err
+	}
+	return response.Matches, response.Subthemes, response.Error()
 }
 
 func (b brickSet) GetThemes(ctx context.Context) (int, []*Themes, error) {
@@ -75,42 +147,46 @@ func (b brickSet) GetSets(ctx context.Context, params *GetSetRequest) (int, []*S
 	request := url.Values{}
 	request.Set("params", params.JSON())
 	request.Set("apiKey", b.conf.apiKey)
-	hash, err := b.hash.GetHash(ctx, b.conf.userName)
+	hash, err := b.hash.GetHash(ctx, b.conf.username)
 	if err != nil {
 		return 0, nil, err
 	}
+
 	request.Set("userHash", hash)
 	err = b.client.GetJSON(ctx, getSetsURL, request, response)
 	if err != nil {
 		return 0, nil, err
 	}
+
 	if b.conf.imagePath != nil {
 		for _, set := range response.Sets {
 			err := set.Image.Download(b.conf.imagePath)
 			if err != nil {
 				Logger.Printf("download image error:%v", err)
 			}
-			err = nil
 		}
 	}
+
 	return response.Matches, response.Sets, response.Error()
 }
 
 func New(apiKey, username, password string, opts ...Option) IBrickSet {
 	conf := &config{
 		apiKey:      apiKey,
-		hashExpires: time.Hour * 24,
-		userName:    username,
+		hashExpires: defaultHashExpires,
+		username:    username,
 		password:    password,
 	}
 	for _, opt := range opts {
 		opt(conf)
 	}
+
 	if conf.storage == nil {
 		conf.storage = storage.NewMemory()
 	}
+
 	c := NewClient(baseURL, conf.debug)
-	a := NewAuth(conf.apiKey, conf.userName, conf.password, c)
+	a := NewAuth(conf.apiKey, conf.username, conf.password, c)
 	h := NewHash(a, conf.storage, conf.hashExpires)
 	return &brickSet{
 		conf:   conf,
@@ -120,9 +196,9 @@ func New(apiKey, username, password string, opts ...Option) IBrickSet {
 	}
 }
 
-func WithAuth(userName, password string) Option {
+func WithAuth(username, password string) Option {
 	return func(conf *config) {
-		conf.userName = userName
+		conf.username = username
 		conf.password = password
 	}
 }
@@ -145,6 +221,7 @@ func WithImagePath(basePath string, prefix string) Option {
 			Logger.Fatal("path is not absolute")
 			return
 		}
+
 		conf.imagePath = &imagePath{
 			base:   basePath,
 			prefix: prefix,

@@ -30,9 +30,11 @@ func (c client) PostForm(ctx context.Context, api string, params url.Values, res
 	if err != nil {
 		return err
 	}
+
 	if resp.StatusCode() != http.StatusOK {
-		return errors.New(http.StatusText(resp.StatusCode()))
+		return errors.New(resp.Status())
 	}
+
 	return c.r.JSONUnmarshal(resp.Body(), response)
 }
 
@@ -41,9 +43,12 @@ func (c client) GetJSON(ctx context.Context, api string, params url.Values, resp
 	if err != nil {
 		return err
 	}
+
 	if resp.StatusCode() != http.StatusOK {
-		return errors.New(http.StatusText(resp.StatusCode()))
+		resp.IsSuccess()
+		return errors.New(resp.Status())
 	}
+
 	return c.r.JSONUnmarshal(resp.Body(), response)
 }
 
@@ -52,11 +57,16 @@ func (c client) PostJSON(ctx context.Context, api string, request interface{}, r
 	if err != nil {
 		return err
 	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return errors.New(resp.Status())
+	}
+
 	return c.r.JSONUnmarshal(resp.Body(), response)
 }
 
-func NewClient(baseUrl string, debug bool) IClient {
+func NewClient(baseURL string, debug bool) IClient {
 	c := resty.New()
-	c = c.SetBaseURL(baseUrl).SetDebug(debug).SetHeader("User-Agent", "Brickset-Go-Client")
+	c = c.SetBaseURL(baseURL).SetDebug(debug).SetHeader("User-Agent", "Brickset-Go-Client")
 	return &client{r: c}
 }

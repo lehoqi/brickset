@@ -10,13 +10,17 @@ package brickset
 import "errors"
 
 type CommonResponse struct {
-	Status  string    `json:"status"`
-	Message string    `json:"message"`
-	Themes  []*Themes `json:"themes"`
-	Matches int       `json:"matches"`
-	Sets    []*Sets   `json:"sets"`
-	Hash    string    `json:"hash"`
-	Reviews []*Review `json:"reviews"`
+	Status           string         `json:"status"`
+	Message          string         `json:"message"`
+	Themes           []*Themes      `json:"themes"`
+	Matches          int            `json:"matches"`
+	Sets             []*Sets        `json:"sets"`
+	Hash             string         `json:"hash"`
+	Reviews          []*Review      `json:"reviews"`
+	Subthemes        []*Subthemes   `json:"subthemes"`
+	Instructions     []*Instruction `json:"instructions"`
+	AdditionalImages []*Image       `json:"additionalImages"`
+	Years            []*Years
 }
 
 func (c CommonResponse) IsSuccess() bool {

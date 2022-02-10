@@ -39,8 +39,8 @@ func (s *sHash) GetHash(ctx context.Context, username string) (string, error) {
 }
 
 func NewHash(auth IBrickAuth, store IBrickStorage, expires time.Duration) IBrickHash {
-	if expires == 0 {
-		expires = time.Hour * 24
+	if expires <= 0 {
+		expires = time.Hour
 	}
 	return &sHash{
 		auth:    auth,

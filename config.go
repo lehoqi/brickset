@@ -9,9 +9,11 @@ package brickset
 
 import "time"
 
+var defaultHashExpires = time.Hour * 24
+
 type config struct {
 	debug       bool
-	userName    string
+	username    string
 	password    string
 	apiKey      string
 	hashExpires time.Duration

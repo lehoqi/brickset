@@ -23,9 +23,9 @@ func getPathFromURL(u string) (string, error) {
 	return s.Path, nil
 }
 
-func downloadFile(source string, target string) error {
+func downloadFile(url string, target string) error {
 	_ = os.MkdirAll(filepath.Dir(target), os.ModePerm)
-	resp, err := http.Get(source)
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}

@@ -137,3 +137,15 @@ type Barcodes struct {
 	EAN string `json:"EAN"`
 	UPC string `json:"UPC"`
 }
+
+type Instruction struct {
+	URL    string `json:"url"`
+	Number int    `json:"number"`
+	Text   string `json:"text"`
+}
+
+type Years struct {
+	Theme string `json:"theme"`
+	Year  string `json:"year"`
+	Count int    `json:"setCount"`
+}

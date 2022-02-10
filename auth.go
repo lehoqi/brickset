@@ -14,7 +14,7 @@ import (
 
 type auth struct {
 	apiKey   string
-	userName string
+	username string
 	password string
 	client   IClient
 }
@@ -34,40 +34,44 @@ func (a auth) CheckKey(ctx context.Context, key string) (bool, error) {
 }
 
 func (a auth) Login(ctx context.Context) (string, error) {
-	resp := &CommonResponse{}
+	response := &CommonResponse{}
 	req := url.Values{}
 	req.Add("apiKey", a.apiKey)
-	req.Add("username", a.userName)
+	req.Add("username", a.username)
 	req.Add("password", a.password)
-	err := a.client.GetJSON(ctx, loginURL, req, resp)
+	err := a.client.GetJSON(ctx, loginURL, req, response)
 	if err != nil {
 		return "", err
 	}
-	if resp.IsSuccess() {
-		return resp.Hash, nil
+
+	if response.IsSuccess() {
+		return response.Hash, nil
 	}
-	return "", resp.Error()
+
+	return "", response.Error()
 }
 
 func (a *auth) CheckUserHash(ctx context.Context, hash string) (bool, error) {
-	resp := &CommonResponse{}
+	response := &CommonResponse{}
 	req := url.Values{}
 	req.Add("apiKey", a.apiKey)
 	req.Add("userHash", hash)
-	err := a.client.GetJSON(ctx, checkUserHashURL, req, resp)
+	err := a.client.GetJSON(ctx, checkUserHashURL, req, response)
 	if err != nil {
 		return false, err
 	}
-	if resp.IsSuccess() {
+
+	if response.IsSuccess() {
 		return true, nil
 	}
-	return false, resp.Error()
+
+	return false, response.Error()
 }
 
-func NewAuth(apiKey, userName, password string, client IClient) IBrickAuth {
+func NewAuth(apiKey, username, password string, client IClient) IBrickAuth {
 	return &auth{
 		apiKey:   apiKey,
-		userName: userName,
+		username: username,
 		password: password,
 		client:   client,
 	}

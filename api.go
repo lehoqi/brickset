@@ -8,11 +8,16 @@
 package brickset
 
 const (
-	baseURL          = "https://brickset.com/api/v3.asmx"
-	loginURL         = "/login"
-	checkUserHashURL = "/checkUserHash"
-	checkKeyURL      = "/checkKey"
-	getSetsURL       = "/getSets"
-	getThemesURL     = "/getThemes"
-	getReviewsURL    = "/getReviews"
+	baseURL                = "https://brickset.com/api/v3.asmx"
+	loginURL               = "/login"
+	checkUserHashURL       = "/checkUserHash"
+	checkKeyURL            = "/checkKey"
+	getSetsURL             = "/getSets"
+	getThemesURL           = "/getThemes"
+	getReviewsURL          = "/getReviews"
+	getSubthemesURL        = "/getSubthemes"
+	getInstructionsURL     = "/getInstructions"
+	getInstructions2URL    = "/getInstructions2"
+	getAdditionalImagesURL = "/getAdditionalImages"
+	getYearsURL            = "/getYears"
 )
