@@ -22,7 +22,7 @@ type IBrickSet interface {
 
 ```bash
 # Go Modules
-require github.com/wuhongbing/brickset
+require github.com/lehoqi/brickset
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ package main
 
 import (
 	"context"
-	"github.com/wuhongbing/brickset"
+	"github.com/lehoqi/brickset"
 	"log"
 )
 

@@ -1,4 +1,4 @@
-module github.com/wuhongbing/brickset
+module github.com/lehoqi/brickset
 
 go 1.16
 

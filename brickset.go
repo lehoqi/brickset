@@ -9,12 +9,13 @@ package brickset
 
 import (
 	"context"
-	"github.com/wuhongbing/brickset/storage"
 	"log"
 	"net/url"
 	"path"
 	"strconv"
 	"time"
+
+	"github.com/wuhongbing/brickset/storage"
 )
 
 type IBrickAuth interface {
