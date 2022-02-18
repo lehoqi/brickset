@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/wuhongbing/brickset/storage"
+	"github.com/lehoqi/brickset/storage"
 )
 
 type IBrickAuth interface {
